@@ -1,3 +1,63 @@
-@use "./variables.scss" as *;
+// Добавьте в конец quartz/styles/custom.scss
+// Главная страница: карточки из callout'ов `[!card]`
 
-// put your custom CSS here!
+article.home {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+
+  // всё, что не карточка, занимает всю ширину
+  & > :not(.callout) {
+    grid-column: 1 / -1;
+  }
+
+  & > .callout[data-callout="card"] {
+    margin: 0;
+    border: 1px solid var(--lightgray);
+    border-radius: 12px;
+    background: var(--light);
+    padding: 0;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+    &:hover {
+      transform: translateY(-3px);
+      border-color: var(--tertiary);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    // скрываем иконку по умолчанию, оставляем эмодзи в заголовке
+    .callout-icon,
+    .fold-callout-icon {
+      display: none;
+    }
+
+    .callout-title {
+      font-family: var(--headerFont);
+      font-size: 1.05rem;
+      color: var(--dark);
+      padding: 0.8rem 1rem 0.2rem;
+    }
+
+    .callout-content {
+      padding: 0 1rem 0.9rem;
+      font-size: 0.95rem;
+
+      p {
+        margin: 0.2rem 0;
+      }
+    }
+  }
+
+  // картинка-заставка: на всю ширину, со скруглением
+  img {
+    border-radius: 12px;
+  }
+
+  // цитата после картинки
+  & > blockquote:not(.callout) {
+    text-align: center;
+    font-size: 1.15rem;
+    border: none;
+    color: var(--secondary);
+  }
+}
