@@ -1,6 +1,171 @@
-// Добавьте в конец quartz/styles/custom.scss
-// Главная страница: карточки из callout'ов `[!card]`
+// ===== 1. ШРИФТЫ: только Literata (файлы лежат в quartz/static/fonts/) =====
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-cyrillic-400-normal.woff2") format("woff2");
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-cyrillic-400-italic.woff2") format("woff2");
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-latin-400-italic.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-cyrillic-700-normal.woff2") format("woff2");
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://toster69.github.io/avolar/static/fonts/literata-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
 
+// =====================================================================
+// 2. ШКАЛА РАЗМЕРОВ — МЕНЯЙТЕ ТОЛЬКО ЗДЕСЬ
+//    Основа: текст для чтения = 1.15rem. Всё остальное считается от неё.
+//    1rem = базовый размер браузера (обычно 16px).
+// =====================================================================
+:root {
+  // Текст
+  --fs-body: 1.05rem;          // основной текст страниц
+  --fs-meta: 1rem;             // даты, хлебные крошки, теги
+
+  // Заголовки на странице
+  --fs-h1: 2.6rem;             // название страницы
+  --fs-h2: 2.1rem;
+  --fs-h3: 1.7rem;
+  --fs-h4: 1.4rem;
+  --fs-h5: 1.2rem;             // h3 и h4
+
+  // Левая панель
+  --fs-site-title: 1.9rem;     // «Аволар» вверху
+  --fs-folder: 1.12rem;         // папки (самые крупные в панели)
+  --fs-file: 1.1rem;           // файлы
+  --fs-search: 1.1rem;         // надпись «Поиск»
+  --fs-explorer-title: 1.9rem; // слово «Энциклопедия»
+
+  // Правая панель (граф, оглавление, обратные ссылки)
+  --fs-side-heading: 1.3rem;   // заголовки блоков справа
+  --fs-side-link: 1.1rem;      // ссылки в оглавлении и обратные ссылки
+
+  // Вес заголовков (700 = жирный Literata; 400 = тоньше)
+  --fw-heading: 700;
+}
+
+// =====================================================================
+// 3. ПРИМЕНЕНИЕ ШКАЛЫ
+// =====================================================================
+
+// --- Текст страницы ---
+article {
+  font-size: var(--fs-body);
+  line-height: 1.7;
+}
+
+// --- Заголовки на странице ---
+article h1, .article-title { font-size: var(--fs-h1); }
+article h2 { font-size: var(--fs-h2); }
+article h3 { font-size: var(--fs-h3); }
+article h4 { font-size: var(--fs-h4); }
+article h5, article h6 { font-size: var(--fs-h5); }
+
+article h1, article h2, article h3, article h4, article h5, article h6,
+.article-title {
+  font-family: var(--headerFont);
+  font-weight: var(--fw-heading);
+  line-height: 1.25;
+}
+
+// --- Мелкие служебные подписи над текстом ---
+.breadcrumb-container, .breadcrumb-element,
+.content-meta, .tags, .note-properties {
+  font-size: var(--fs-meta);
+}
+
+// --- Левая панель ---
+.page-title,
+.page-title a {
+  font-family: var(--headerFont);
+  font-size: var(--fs-site-title) !important;
+  font-weight: var(--fw-heading);
+  line-height: 1.2;
+}
+
+.search .search-button p,
+.search .search-button {
+  font-size: var(--fs-search);
+}
+
+.explorer {
+  // Файлы: обычный вес, цвет как у текста
+  li > a {
+    font-size: var(--fs-file) !important;
+    font-weight: 400 !important;
+    color: var(--darkgray) !important;
+  }
+  li > a.active {
+    color: var(--tertiary) !important;     // открытая страница
+  }
+
+  // Папки: крупнее и жирнее файлов, цвет как у ссылок
+  .folder-title,
+  .folder-button span,
+  .folder-container > div > a {
+    font-family: var(--headerFont) !important;
+    font-size: var(--fs-folder) !important;
+    font-weight: 700 !important;
+    color: var(--secondary) !important;
+  }
+}
+
+// --- Правая панель ---
+.right .graph h3,
+.right .toc h3,
+.right .backlinks h3,
+.toc > button h3,
+.backlinks > h3 {
+  font-family: var(--headerFont);
+  font-size: var(--fs-side-heading) !important;
+  font-weight: var(--fw-heading);
+}
+
+.toc-content a,
+.toc ul a,
+.backlinks ul a {
+  font-size: var(--fs-side-link) !important;
+}
+
+// =====================================================================
+// 4. ГЛАВНАЯ СТРАНИЦА: карточки из callout'ов `[!card]`
+// =====================================================================
 article.home {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -25,7 +190,7 @@ article.home {
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
     }
 
-    // скрываем иконку по умолчанию, оставляем эмодзи в заголовке
+    // иконку скрываем, оставляем эмодзи в заголовке
     .callout-icon,
     .fold-callout-icon {
       display: none;
@@ -33,14 +198,15 @@ article.home {
 
     .callout-title {
       font-family: var(--headerFont);
-      font-size: 1.05rem;
+      font-size: var(--fs-h4);           // заголовок карточки
+      font-weight: var(--fw-heading);
       color: var(--dark);
       padding: 0.8rem 1rem 0.2rem;
     }
 
     .callout-content {
       padding: 0 1rem 0.9rem;
-      font-size: 0.95rem;
+      font-size: var(--fs-body);         // текст карточки
 
       p {
         margin: 0.2rem 0;
@@ -48,15 +214,15 @@ article.home {
     }
   }
 
-  // картинка-заставка: на всю ширину, со скруглением
+  // картинка-заставка
   img {
     border-radius: 12px;
   }
 
-  // цитата после картинки
+  // цитата под картинкой
   & > blockquote:not(.callout) {
     text-align: center;
-    font-size: 1.15rem;
+    font-size: 2.05rem;
     border: none;
     color: var(--secondary);
   }

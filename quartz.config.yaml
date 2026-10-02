@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: "Аволар — Энциклопедия мира"
+  pageTitle: "Аволар"
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
@@ -16,12 +16,9 @@ configuration:
     fontOrigin: googleFonts
     cdnCaching: true
     typography:
-      # Ар-деко: геометричная, вытянутая, «архитектурная» антиква для заголовков
-      header: Cinzel
-      # Литературный, «кожаный переплёт и золотое тиснение» — для тела текста
-      body: Cormorant Garamond
-      # Строгая моноширинная «печатная машинка 1920-х»
-      code: JetBrains Mono
+       header: Literata
+       body: Literata
+       code: JetBrains Mono
     colors:
       lightMode:
         # --- ФОН: дорогая бумага цвета слоновой кости с тёплым подтоном ---
@@ -39,7 +36,7 @@ configuration:
         # --- ФОН: ночной ультрамарин / бархат ар-деко ---
         light: "#0A1424"           # Глубокий полуночный синий — фон
         lightgray: "#152340"       # Панели — тёмная синяя сталь с золотым кантом
-        gray: "#3F5A7A"            # Иконки, границы — окисленная сталь
+        gray: "#6F8FB3"            # Иконки, границы — окисленная сталь
         darkgray: "#E4DCC8"        # Основной текст — тёплый пергамент (мягче для глаз)
         dark: "#E8C766"            # Заголовки — полированное золото
         secondary: "#D4AF37"       # ЗОЛОТО — ссылки, папки, граф, активные элементы
@@ -187,6 +184,8 @@ plugins:
       group: toolbar
   - source: "@quartz-community/explorer"
     enabled: true
+    options:
+      title: "Энциклопедия"
     layout:
       position: left
       priority: 50
@@ -255,8 +254,8 @@ plugins:
     enabled: true
     options:
       links:
-        GitHub: https://github.com/jackyzha0/quartz
-        Discord Community: https://discord.gg/cRFFHYye7t
+        # GitHub: https://github.com/jackyzha0/quartz
+        # Discord Community: https://discord.gg/cRFFHYye7t
     layout:
       position: footer
       priority: 10
@@ -286,3 +285,4 @@ layout:
         right: []
     canvas: {}
     bases: {}
+    
