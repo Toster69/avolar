@@ -25,7 +25,7 @@ cssclasses:
 > Весь лор, фракции и города — в разделах ниже. Сюжетные тайны и заметки ДМа лежат отдельно.
 
 > [!card] 📺 Я хочу смотреть «Хроники Ходов»
-> [Канал на YouTube](https://www.youtube.com/@ChronicleMove) и [Boosty](https://boosty.to/toster69). Обсуждение — в [Discord](https://discord.gg/ArnXMj2zW).
+> [Канал на YouTube](https://www.youtube.com/@ChronicleMove) и [Boosty](https://boosty.to/toster69). Обсуждение — в [Telegram](https://t.me/ChronicleMove_Avolar).
 
 ---
 
