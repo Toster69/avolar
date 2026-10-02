@@ -147,7 +147,7 @@ plugins:
     options:
       enableCopyTool: false
   - source: "@quartz-community/obsidian-plugin-excalidraw"
-    enabled: true
+    enabled: false
     options:
       enableInteraction: true
       darkMode: auto
