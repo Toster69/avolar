@@ -1,0 +1,33 @@
+{
+  "name": "avolar-home",
+  "version": "1.0.0",
+  "description": "Интерактивная главная страница Аволара. Выключается одной строкой в quartz.config.yaml (enabled: false).",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./components": "./dist/components/index.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  },
+  "quartz": {
+    "name": "avolar-home",
+    "displayName": "Avolar Home",
+    "category": ["component"],
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "AvolarHome": {
+        "displayName": "Avolar Home",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 5
+      }
+    }
+  }
+}

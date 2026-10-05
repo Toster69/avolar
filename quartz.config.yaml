@@ -208,6 +208,15 @@ plugins:
       position: right
       priority: 30
 
+  # ================= НОВАЯ ГЛАВНАЯ СТРАНИЦА =================
+  # true  — интерактивная главная (содержимое: plugins/avolar-home/home.yaml)
+  # false — классическая главная из content/index.md, как было раньше
+  - source: ./plugins/avolar-home
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 50
+
   # --- ЦЕНТР (НАД ТЕКСТОМ) ---
   - source: "@quartz-community/breadcrumbs"
     enabled: true
