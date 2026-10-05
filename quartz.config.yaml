@@ -98,7 +98,7 @@ plugins:
     enabled: true
     order: 90
   - source: "@quartz-community/quartz-fonts"
-    enabled: true
+    enabled: false
   - source: "@quartz-themes/core"
     enabled: false 
     options:

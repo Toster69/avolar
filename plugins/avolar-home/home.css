@@ -395,7 +395,7 @@ body:has(.avh) .right .graph {
 .avh-tl-panel {
   position: relative;
   margin-top: 1rem;
-  padding: 1.25rem 1.4rem 1.3rem 6.5rem;
+  padding: 1.25rem 1.4rem 1.3rem 7.75rem;
   min-height: 7.5rem;
   background: var(--avh-panel);
   border-left: 3px solid var(--avh-gold);
