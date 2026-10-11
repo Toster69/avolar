@@ -1,0 +1,33 @@
+{
+  "name": "avolar-world",
+  "version": "1.0.0",
+  "description": "Интерактивная страница «О мире». Выключается одной строкой в quartz.config.yaml (enabled: false).",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./components": "./dist/components/index.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  },
+  "quartz": {
+    "name": "avolar-world",
+    "displayName": "Avolar World",
+    "category": ["component"],
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "AvolarWorld": {
+        "displayName": "Avolar World",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 5
+      }
+    }
+  }
+}

@@ -216,6 +216,28 @@ plugins:
     layout:
       position: beforeBody
       priority: 50
+      
+      
+  # ================= ИНТЕРАКТИВНАЯ КАРТА =================
+  # true  — новая карта на странице «Карта» (данные: plugins/avolar-atlas/atlas.yaml)
+  # false — старая страница из content/Карта.md, как было раньше
+  - source: ./plugins/avolar-atlas
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 51
+
+  # ================= ИНТЕРАКТИВНАЯ О МИРЕ =================
+  # true  — новая карта на странице «Карта» (данные: plugins/avolar-atlas/atlas.yaml)
+  # false — старая страница из content/Карта.md, как было раньше
+  - source: ./plugins/avolar-world
+    enabled: false
+    layout:
+      position: beforeBody
+      priority: 52
+
+
+
 
   # --- ЦЕНТР (НАД ТЕКСТОМ) ---
   - source: "@quartz-community/breadcrumbs"

@@ -1,0 +1,995 @@
+/* ==================================================================
+   Интерактивная карта Аволара (плагин avolar-atlas)
+   Цвета — переменные темы сайта; на самой карте — фиксированные
+   цвета, потому что фон карты не меняется вместе с темой.
+   ================================================================== */
+
+/* ---------- Прячем старую страницу и раздвигаем колонку ---------- */
+.center:has(.atl) > article,
+.center:has(.atl) > hr,
+.center:has(.atl) .article-title,
+.center:has(.atl) .note-properties,
+.center:has(.atl) .content-meta,
+.page > #quartz-body:has(.atl) .sidebar.right {
+  display: none !important;
+}
+@media (min-width: 800px) {
+  .page > #quartz-body:has(.atl) {
+    grid-template:
+      "grid-sidebar-left grid-header"
+      "grid-sidebar-left grid-center"
+      "grid-sidebar-left grid-footer" / 320px minmax(0, 1fr);
+  }
+}
+
+.atl {
+  --atl-gold: var(--secondary);
+  --atl-red: var(--secondary);
+  --atl-panel: color-mix(in srgb, var(--lightgray) 55%, var(--light));
+  --atl-line: color-mix(in srgb, var(--gray) 45%, transparent);
+  --atl-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* цвета на самой карте */
+  --pin-ink: #0a1424;
+  --pin-gold: #e8c766;
+  --pin-red: #c1121f;
+  font-family: var(--bodyFont);
+  color: var(--darkgray);
+  margin-bottom: 2rem;
+}
+:root[saved-theme="dark"] .atl {
+  --atl-red: var(--tertiary);
+}
+
+.atl-head {
+  margin: 0 0 1rem;
+}
+.atl-title {
+  font-family: var(--headerFont);
+  font-size: var(--fs-h1, 1.9rem);
+  color: var(--dark);
+  margin: 0 0 0.35rem;
+}
+.atl-intro {
+  margin: 0;
+  max-width: 70ch;
+  opacity: 0.85;
+}
+
+/* ---------- Поиск и значки ---------- */
+.atl-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.8rem 0.45rem 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--atl-line);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236F8FB3' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E")
+      0.65rem center / 0.95rem no-repeat,
+    var(--light);
+  color: var(--darkgray);
+}
+.atl-search-input:focus {
+  outline: none;
+  border-color: var(--atl-gold);
+}
+.atl-suggest {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--light);
+  border: 1px solid var(--atl-gold);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  max-height: 18rem;
+  overflow: auto;
+}
+.atl-suggest li {
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.atl-suggest li small {
+  color: var(--gray);
+}
+.atl-suggest li[aria-selected="true"],
+.atl-suggest li:hover {
+  background: var(--atl-panel);
+}
+
+.atl-sw {
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  transform: rotate(45deg);
+  background: var(--pin-ink);
+  border: 1.5px solid var(--pin-gold);
+}
+.atl-sw-capital {
+  background: var(--pin-gold);
+}
+.atl-sw-fortress {
+  box-shadow: inset 0 0 0 1.5px var(--pin-ink), inset 0 0 0 2.5px var(--pin-gold);
+}
+.atl-sw-shrine {
+  background: radial-gradient(circle, var(--pin-gold) 0 26%, var(--pin-ink) 30%);
+}
+.atl-sw-lost {
+  border-style: dashed;
+  border-color: #ff5a5f;
+  background: rgba(60, 6, 10, 0.85);
+}
+
+/* ---------- Сцена с картой ---------- */
+.atl-frame {
+  position: relative;
+}
+.atl-stage {
+  position: relative;
+  height: min(76vh, 760px);
+  min-height: 420px;
+  overflow: hidden;
+  /* метки за краем карты не должны расширять страницу */
+  contain: paint;
+  border-radius: 6px;
+  border: 1px solid var(--atl-gold);
+  background: #1b1714;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  /* уголки ар-деко */
+  box-shadow:
+    inset 0 0 0 3px #1b1714,
+    inset 0 0 0 4px color-mix(in srgb, var(--atl-gold) 55%, transparent),
+    inset 0 0 70px rgba(0, 0, 0, 0.55);
+}
+.atl-stage:focus-visible {
+  outline: 2px solid var(--atl-red);
+  outline-offset: 2px;
+}
+.atl-stage.is-dragging {
+  cursor: grabbing;
+}
+.atl-stage.is-tool {
+  cursor: crosshair;
+}
+.atl-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  z-index: 0;
+}
+.atl-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  max-width: none;
+  pointer-events: none;
+}
+
+.atl-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Красная Полоса — «дышит» */
+.atl-strip {
+  transition: opacity 0.5s;
+}
+.atl-strip-glow {
+  fill: #c00000;
+  opacity: 0.65;
+  animation: atl-breathe 5s ease-in-out infinite;
+}
+.atl-strip-edge {
+  fill: none;
+  stroke: #c00000;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 5 4;
+  opacity: 0.8;
+}
+@keyframes atl-breathe {
+  50% {
+    opacity: 0.05;
+  }
+}
+.atl.no-strip .atl-strip {
+  opacity: 0;
+}
+/* линия фронта до 490 года */
+
+/* пути героев */
+
+.atl-ruler-line {
+  fill: none;
+  stroke: #fff3c4;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 6 4;
+}
+
+/* ---------- Метки ---------- */
+.atl-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* Метки мест — те же ромбы, что на мини-карте главной (плагин avolar-home) */
+.atl-pin {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  /* метка не растёт вместе с картой; --dx/--dy — сдвиг в экранных пикселях */
+  transform: translate(calc(var(--dx, 0px) * var(--inv, 1)), calc(var(--dy, 0px) * var(--inv, 1))) scale(var(--inv, 1));
+  z-index: 2;
+}
+.atl-pin.is-active {
+  z-index: 5;
+}
+.atl-pin::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--pin-ink);
+  border: 1.5px solid var(--pin-gold);
+  box-shadow: 0 0 0 1.5px rgba(10, 20, 36, 0.5), 0 1px 4px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s var(--atl-ease), background 0.2s;
+}
+/* столица — золотой ромб с медленной пульсацией */
+.atl-pin.t-capital::before {
+  width: 13px;
+  height: 13px;
+  background: var(--pin-gold);
+  border-color: #fff3c4;
+}
+.atl-pin.t-capital::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 21px;
+  height: 21px;
+  margin: -10.5px 0 0 -10.5px;
+  border: 1px solid var(--pin-gold);
+  transform: rotate(45deg);
+  animation: atl-ring 2.8s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes atl-ring {
+  from {
+    opacity: 0.9;
+    transform: rotate(45deg) scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(45deg) scale(1.6);
+  }
+}
+/* крепость — двойная рамка */
+.atl-pin.t-fortress::before {
+  box-shadow:
+    inset 0 0 0 2px var(--pin-ink),
+    inset 0 0 0 3.5px var(--pin-gold),
+    0 0 0 1.5px rgba(10, 20, 36, 0.5),
+    0 1px 4px rgba(0, 0, 0, 0.6);
+}
+/* святыня — золотая точка внутри */
+.atl-pin.t-shrine::before {
+  background: radial-gradient(circle, var(--pin-gold) 0 26%, var(--pin-ink) 30%);
+}
+/* пропавший город — красный пунктир */
+.atl-pin.is-lost::before {
+  border-style: dashed;
+  border-color: #ff5a5f;
+  background: rgba(60, 6, 10, 0.85);
+  box-shadow: 0 0 0 1.5px rgba(10, 20, 36, 0.5), 0 0 8px rgba(255, 60, 60, 0.6);
+}
+.atl-pin:hover::before,
+.atl-pin:focus-visible::before,
+.atl-pin.is-active::before {
+  background: var(--pin-red);
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.6);
+}
+.atl-pin:focus-visible {
+  outline: none;
+}
+
+/* события — четырёхлучевая звезда-вспышка */
+
+/* герои — портрет в цветном кольце */
+
+/* города всегда поверх событий, чтобы по ним было легко попасть */
+.atl-pin.k-place {
+  z-index: 3;
+}
+
+/* подпись метки */
+.atl-pin-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 1px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.12rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(10, 20, 36, 0.92);
+  color: var(--pin-gold);
+  font: 700 0.78rem var(--headerFont);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.atl-pin:hover .atl-pin-label,
+.atl-pin:focus-visible .atl-pin-label,
+.atl-pin.is-active .atl-pin-label,
+.atl.show-labels .atl-pin.k-place .atl-pin-label {
+  opacity: 1;
+}
+.atl.show-labels .atl-pin.k-place:not(:hover):not(.is-active) .atl-pin-label {
+  background: rgba(10, 20, 36, 0.7);
+  font-size: 0.72rem;
+}
+
+/* скрытые слои и типы */
+
+/* точки на пути героя */
+
+/* ---------- Роза ветров и кнопки ---------- */
+/* легенда с розой ветров — левый нижний угол */
+.atl-legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 6;
+  max-width: calc(100% - 24px);
+}
+.atl-legend-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 199, 102, 0.55);
+  background: rgba(10, 20, 36, 0.85);
+  color: #e8c766;
+  font: 700 0.85rem var(--headerFont);
+  cursor: pointer;
+}
+.atl-legend-toggle:hover,
+.atl-legend-toggle[aria-expanded="true"] {
+  border-color: #e8c766;
+}
+.atl-rose {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: #e8c766;
+  stroke-width: 1.4;
+  transition: transform 0.6s var(--atl-ease);
+}
+.atl-legend-toggle[aria-expanded="true"] .atl-rose {
+  transform: rotate(180deg);
+}
+.atl-rose .fill {
+  fill: #e8c766;
+  stroke: none;
+}
+.atl-legend-list {
+  list-style: none;
+  margin: 0 0 0.4rem;
+  padding: 0.6rem 0.8rem;
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  min-width: 13rem;
+  background: rgba(10, 20, 36, 0.94);
+  border: 1px solid rgba(232, 199, 102, 0.55);
+  border-radius: 6px;
+  color: #e4dcc8;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+}
+.atl-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.3rem 0;
+}
+.atl-legend-list .atl-sw {
+  margin: 0 0.1rem;
+}
+
+.atl-lg-strip {
+  width: 1.1rem;
+  height: 0.6rem;
+  background: rgba(193, 18, 31, 0.6);
+  border: 1.5px dashed #c00000;
+}
+.atl-lg-border {
+  width: 1.1rem;
+  height: 0;
+  border-top: 1.5px dashed #e4dcc8;
+  opacity: 0.8;
+}
+
+/* обзорная мини-карта — правый нижний угол */
+.atl-overview {
+  position: absolute;
+  right: 58px;
+  top: 12px;
+  z-index: 6;
+  width: 112px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(232, 199, 102, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1b1714;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.atl.is-zoomed .atl-overview {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.atl-overview img {
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  display: block;
+  filter: saturate(0.8) brightness(0.85);
+}
+.atl-overview-view {
+  position: absolute;
+  border: 1.5px solid #e8c766;
+  background: rgba(232, 199, 102, 0.15);
+  box-shadow: 0 0 0 999px rgba(10, 20, 36, 0.35);
+  pointer-events: none;
+}
+
+/* карточка-превью при наведении на метку */
+.atl-card {
+  position: absolute;
+  z-index: 7;
+  width: 15rem;
+  pointer-events: none;
+  background: rgba(10, 20, 36, 0.96);
+  color: #e4dcc8;
+  border: 1px solid rgba(232, 199, 102, 0.7);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+  animation: atl-card-in 0.18s var(--atl-ease);
+}
+@keyframes atl-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.atl-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
+  object-position: 50% 30%;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+.atl-card-body {
+  padding: 0.55rem 0.75rem 0.65rem;
+}
+.atl-card-kind {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: #9fb3cc;
+}
+.atl-card b {
+  display: block;
+  margin: 0.1rem 0 0.15rem;
+  font: 700 1rem var(--headerFont);
+  color: #e8c766;
+}
+.atl-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.atl-card-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: #9fb3cc;
+}
+
+.atl-controls {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 6;
+}
+.atl-controls button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: 400 1.3rem/1 var(--bodyFont);
+  color: #e8c766;
+  background: rgba(10, 20, 36, 0.85);
+  border: 1px solid rgba(232, 199, 102, 0.55);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.atl-controls button:hover,
+.atl-controls button[aria-pressed="true"] {
+  background: #c1121f;
+  border-color: #e8c766;
+  color: #fff3c4;
+}
+.atl-controls svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.atl-hint {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  z-index: 7;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(10, 20, 36, 0.92);
+  color: #e8c766;
+  border: 1px solid rgba(232, 199, 102, 0.5);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---------- Досье ---------- */
+
+.atl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+.atl .atl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--atl-gold);
+  color: var(--atl-gold);
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.atl .atl-btn:hover,
+.atl .atl-btn.is-primary {
+  background: var(--atl-gold);
+  color: var(--light);
+}
+
+/* ---------- Под картой: границы и ключевые точки ---------- */
+.atl-index {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 1.5rem 2rem;
+  margin-top: 2.25rem;
+}
+.atl .atl-block h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  font-family: var(--headerFont);
+  font-size: var(--fs-h2, 1.5rem);
+  color: var(--dark);
+}
+/* как заголовки разделов на главной: ромб и линия */
+.atl .atl-block h2::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  transform: rotate(45deg);
+  background: var(--atl-gold);
+  flex: none;
+}
+.atl .atl-block h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--atl-gold), transparent);
+  opacity: 0.6;
+}
+.atl-sides {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.atl-side {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+.atl-side-key {
+  margin-top: 0.3rem;
+  width: 1.6rem;
+  height: 1rem;
+  border-radius: 2px;
+  background: var(--c);
+  border: 1px solid color-mix(in srgb, var(--c) 60%, #000);
+}
+.atl-side-strip {
+  background: color-mix(in srgb, var(--c) 55%, transparent);
+  border: 1.5px dashed #ff6b6b;
+}
+.atl-side h3 {
+  margin: 0 0 0.15rem;
+  font-family: var(--headerFont);
+  font-size: 1.05rem;
+}
+.atl-side p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+/* ==================================================================
+   Карта на всю ширину + переключатели под ней
+   ================================================================== */
+.atl-app {
+  /* карта занимает почти весь экран, но не меньше 440 и не больше 900 px */
+  border: 1px solid var(--atl-gold);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--light);
+}
+.atl-app .atl-stage {
+  height: clamp(440px, calc(100svh - 9rem), 900px);
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/* ---------- переключатели значков ---------- */
+.atl-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-top: 1px solid var(--atl-gold);
+  background: var(--atl-panel);
+}
+.atl-bar-label {
+  font: 700 0.95rem var(--headerFont);
+  color: var(--dark);
+}
+.atl-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+.atl .atl-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--atl-line);
+  background: transparent;
+  color: var(--gray);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.atl .atl-toggle[aria-pressed="true"] {
+  border-color: var(--atl-gold);
+  color: var(--dark);
+  background: color-mix(in srgb, var(--atl-gold) 14%, transparent);
+}
+.atl .atl-toggle[aria-pressed="false"] .atl-sw,
+.atl .atl-toggle[aria-pressed="false"] .atl-lg-strip {
+  opacity: 0.35;
+}
+.atl .atl-toggle:focus-visible,
+.atl .atl-toggle-all:focus-visible {
+  outline: 2px solid var(--atl-red);
+  outline-offset: 2px;
+}
+.atl .atl-toggle-all {
+  border: 0;
+  background: none;
+  padding: 0.3rem 0.2rem;
+  color: var(--atl-gold);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+/* значки в переключателях — контурные, как в списках на главной */
+.atl-bar .atl-sw:not(.atl-sw-capital):not(.atl-sw-site) {
+  background: transparent;
+  border-color: var(--atl-gold);
+}
+.atl-bar .atl-sw-shrine {
+  background: radial-gradient(circle, var(--atl-gold) 0 26%, transparent 30%) !important;
+}
+.atl-bar .atl-sw-fortress {
+  box-shadow: inset 0 0 0 1.5px var(--light), inset 0 0 0 2.5px var(--atl-gold);
+}
+.atl-bar .atl-sw-capital,
+.atl-bar .atl-sw-site {
+  background: var(--atl-gold);
+  border-color: var(--atl-gold);
+}
+.atl-sw-label {
+  transform: none;
+  width: 1rem;
+  height: 0.55rem;
+  border-radius: 2px;
+  border: 0 !important;
+  background: color-mix(in srgb, var(--atl-gold) 70%, transparent) !important;
+}
+
+/* что скрыто переключателями */
+.atl.hide-t-capital .atl-pin.t-capital,
+.atl.hide-t-city .atl-pin.t-city,
+.atl.hide-t-fortress .atl-pin.t-fortress,
+.atl.hide-t-shrine .atl-pin.t-shrine,
+.atl.hide-sites .atl-pin.k-site {
+  display: none;
+}
+.atl.hide-labels .atl-pin .atl-pin-label {
+  opacity: 0 !important;
+}
+.atl.hide-labels .atl-pin:hover .atl-pin-label,
+.atl.hide-labels .atl-pin:focus-visible .atl-pin-label {
+  opacity: 1 !important;
+}
+.atl.hide-strip .atl-strip {
+  display: none;
+}
+
+/* памятное место — маленькая звезда */
+.atl-pin.k-site::before {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+  background: var(--pin-gold);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+.atl-pin.k-site:hover::before,
+.atl-pin.k-site.is-active::before {
+  background: var(--pin-red);
+  transform: translate(-50%, -50%) scale(1.5);
+}
+.atl-sw-site {
+  border: 0;
+  transform: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--pin-gold);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+/* ---------- карточка места: превью и открытая ---------- */
+.atl-card.is-open {
+  pointer-events: auto;
+  width: 17rem;
+  cursor: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.atl-card-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(10, 20, 36, 0.8);
+  color: #e8c766;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.atl-card-desc {
+  margin-top: 0.35rem !important;
+  color: #c9c1ad;
+}
+.atl-card .atl-actions {
+  margin-top: 0.6rem;
+}
+.atl-card .atl-btn.is-primary {
+  background: #e8c766;
+  border-color: #e8c766;
+  color: #0a1424;
+}
+
+/* ---------- во весь экран ---------- */
+.atl-app:fullscreen,
+.atl-app.is-full {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  border: 0;
+}
+.atl-app:fullscreen .atl-stage,
+.atl-app.is-full .atl-stage {
+  flex: 1;
+  height: auto;
+}
+.atl-app.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+@media (min-width: 801px) {
+  .atl {
+    padding-right: 1.5rem;
+  }
+  body:has(.atl) .avh-sound {
+    right: auto;
+    left: 1rem;
+  }
+}
+@media (max-width: 800px) {
+  .atl-app .atl-stage {
+    height: min(68svh, 118vw);
+    min-height: 340px;
+  }
+  .atl-overview {
+    display: none;
+  }
+  .atl-bar-label {
+    width: 100%;
+  }
+  .atl-card.is-open {
+    width: min(17rem, calc(100% - 70px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atl *,
+  .atl *::before,
+  .atl *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* «Границы» под картой */
+.atl-index {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 52rem;
+}
+.atl-side-item {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+.atl-side-item h3 {
+  margin: 0 0 0.15rem;
+  font-family: var(--headerFont);
+  font-size: 1.05rem;
+}
+.atl-side-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+/* текст карточки всегда светлый: фон карточки тёмный в обеих темах */
+.atl .atl-card p {
+  color: #e4dcc8;
+}
+.atl .atl-card .atl-card-desc {
+  color: #b9b2a0;
+}
+
+/* подписи не растут вместе со значками — остаются читаемого размера */
+.atl-pin-label {
+  transform: translateX(-50%) scale(calc(1 / var(--inv, 1)));
+  transform-origin: 50% 100%;
+}
+
+/* знаковые места — красная звезда, подпись видна всегда */
+.atl-pin.k-site::before {
+  width: 16px;
+  height: 16px;
+  background: var(--pin-red);
+  filter: drop-shadow(0 0 1.5px #fff3c4) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+}
+.atl-pin.k-site:hover::before,
+.atl-pin.k-site.is-active::before {
+  background: #ff3b3b;
+}
+.atl-pin.k-site .atl-pin-label {
+  opacity: 1;
+  color: #fff3c4;
+  background: rgba(130, 12, 20, 0.92);
+}
+.atl-sw-site,
+.atl-bar .atl-sw-site {
+  background: var(--pin-red) !important;
+}
+/* легенда всегда на тёмной подложке — текст светлый в обеих темах */
+.atl .atl-legend-list,
+.atl .atl-legend-list li {
+  color: #e4dcc8;
+}
+/* подпись знакового места — справа от звезды, чтобы не закрывать соседние города */
+.atl-pin.k-site .atl-pin-label {
+  left: calc(100% - 2px);
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%) scale(calc(1 / var(--inv, 1)));
+  transform-origin: 0 50%;
+}

@@ -1,0 +1,33 @@
+{
+  "name": "avolar-atlas",
+  "version": "1.0.0",
+  "description": "Интерактивная карта Аволара на странице «Карта». Выключается одной строкой в quartz.config.yaml (enabled: false).",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./components": "./dist/components/index.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  },
+  "quartz": {
+    "name": "avolar-atlas",
+    "displayName": "Avolar Atlas",
+    "category": ["component"],
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "AvolarAtlas": {
+        "displayName": "Avolar Atlas",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 5
+      }
+    }
+  }
+}
