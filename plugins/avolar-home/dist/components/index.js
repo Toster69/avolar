@@ -136,6 +136,33 @@ function heroSection(cfg, R) {
   </header>`
 }
 
+function guideSection(cfg, R) {
+  const cover = R.image(cfg.cover)
+  const dl = cfg.download?.url
+    ? `<a class="avh-guide-dl" href="${esc(cfg.download.url)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>${esc(cfg.download.label ?? "Скачать PDF")}</a>`
+    : ""
+  const links = (cfg.links ?? [])
+    .filter((l) => l.url)
+    .map((l) => `<a class="external" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+    .join("")
+  const inside = (cfg.inside ?? []).map((t) => `<li>${inline(t, R)}</li>`).join("")
+  const coverTag = cover
+    ? `<img src="${esc(cover)}" alt="Обложка: ${esc(cfg.title ?? "Путеводитель")}" loading="lazy" decoding="async">`
+    : ""
+  return `
+  <section class="avh-guide" aria-labelledby="avh-guide-h">
+    ${cover && cfg.download?.url ? `<a class="avh-guide-cover" href="${esc(cfg.download.url)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${coverTag}</a>` : cover ? `<span class="avh-guide-cover">${coverTag}</span>` : ""}
+    <div class="avh-guide-body">
+      ${cfg.label ? `<p class="avh-guide-label">${esc(cfg.label)}</p>` : ""}
+      <h2 id="avh-guide-h">${esc(cfg.title ?? "Путеводитель")}</h2>
+      ${cfg.text ? `<p class="avh-guide-text">${inline(cfg.text, R)}</p>` : ""}
+      <div class="avh-guide-actions">${dl}${links ? `<span class="avh-guide-links">${links}</span>` : ""}</div>
+      ${inside ? `<details class="avh-guide-inside"><summary>${esc(cfg.insideLabel ?? "Что внутри")}</summary><ul>${inside}</ul></details>` : ""}
+    </div>
+  </section>`
+}
+
 function pathsSection(cfg, R) {
   const cards = (cfg.cards ?? [])
     .map((c, i) => {
@@ -199,7 +226,7 @@ function timelineSection(cfg, R) {
         <span class="avh-tl-tick is-start" style="--x:0%">0</span>
         <span class="avh-tl-tick" style="--x:50%">500</span>
         <span class="avh-tl-tick is-end" style="--x:100%">1000</span>
-        <span class="avh-tl-unknown">Тысячелетие Тьмы?</span>
+        <span class="avh-tl-unknown">Тысячелетие Света?</span>
       </div>
       <ol class="avh-tl-events" style="--count:${events.length}">${marks}</ol>
     </div>
@@ -406,6 +433,7 @@ export const AvolarHome = (opts) => {
 
     const html = [
       cfg.hero ? heroSection(cfg.hero, R) : "",
+      cfg.guide ? guideSection(cfg.guide, R) : "",
       cfg.paths ? pathsSection(cfg.paths, R) : "",
       cfg.timeline ? timelineSection(cfg.timeline, R) : "",
       cfg.world ? worldSection(cfg.world, R) : "",

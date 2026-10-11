@@ -119,6 +119,158 @@ body:has(.avh) .right .graph {
   color: var(--avh-gold);
 }
 
+/* ---------- Книга: Путеводитель по миру ---------- */
+.avh-guide {
+  position: relative;
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: start;
+  margin: 2.25rem 0 0;
+  padding: 1.25rem 1.4rem 1.2rem 1.25rem;
+  border: 1px solid var(--avh-gold);
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--avh-red) 14%, transparent), transparent 60%),
+    var(--avh-panel);
+}
+/* обложка как книга: корешок слева и тень */
+.avh .avh-guide-cover {
+  display: block;
+  position: relative;
+  transform: rotate(-2.5deg);
+  transition: transform 0.35s var(--avh-ease);
+  margin-top: -2.2rem;
+  background: none;
+}
+.avh-guide-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 !important;
+  border-radius: 2px 4px 4px 2px !important;
+  box-shadow:
+    inset 4px 0 6px rgba(0, 0, 0, 0.35),
+    0 10px 22px rgba(0, 0, 0, 0.45),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.avh-guide-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.12) 60%, transparent);
+  border-radius: 2px 0 0 2px;
+  pointer-events: none;
+}
+.avh-guide:hover .avh-guide-cover {
+  transform: rotate(0deg) translateY(-3px);
+}
+.avh-guide-label {
+  margin: 0 0 0.15rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--avh-red);
+}
+.avh .avh-guide h2 {
+  font-size: 1.35rem;
+  line-height: 1.25;
+  margin: 0 0 0.4rem;
+}
+.avh .avh-guide h2::before,
+.avh .avh-guide h2::after {
+  display: none;
+}
+.avh-guide-text {
+  margin: 0 0 0.85rem;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.avh-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.1rem;
+}
+.avh .avh-guide-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1.05rem 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--avh-red);
+  color: #fff7e6;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--avh-red) 40%, transparent);
+  transition: transform 0.15s, filter 0.15s;
+}
+.avh .avh-guide-dl:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+.avh-guide-dl svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.avh-guide-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
+  font-size: 0.92rem;
+}
+.avh-guide-links a {
+  color: var(--avh-gold);
+}
+.avh-guide-inside {
+  margin-top: 0.9rem;
+  border-top: 1px dashed var(--avh-line);
+  padding-top: 0.55rem;
+}
+.avh-guide-inside summary {
+  cursor: pointer;
+  width: fit-content;
+  font-family: var(--headerFont);
+  font-weight: 700;
+  color: var(--dark);
+  list-style: none;
+}
+.avh-guide-inside summary::-webkit-details-marker {
+  display: none;
+}
+.avh-guide-inside summary::after {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.55rem;
+  border-right: 1.5px solid var(--avh-gold);
+  border-bottom: 1.5px solid var(--avh-gold);
+  transform: translateY(-0.2rem) rotate(45deg);
+  transition: transform 0.2s;
+}
+.avh-guide-inside[open] summary::after {
+  transform: translateY(0.05rem) rotate(-135deg);
+}
+.avh-guide-inside ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+.avh-guide-inside li {
+  margin: 0.3rem 0;
+  font-size: 0.96rem;
+  line-height: 1.45;
+}
+.avh-guide-inside li::marker {
+  color: var(--avh-gold);
+}
+
 /* ---------- 1. Карточки пути ---------- */
 .avh-cards {
   list-style: none;
@@ -1006,6 +1158,38 @@ html:has(.avh[data-cursor="on"]) :is(input, textarea, [contenteditable]) {
 @media (max-width: 640px) {
   .avh-section {
     margin-top: 2.5rem;
+  }
+  /* на телефоне рядом с обложкой только заголовок, остальное — во всю ширину */
+  .avh-guide {
+    grid-template-columns: 5.25rem minmax(0, 1fr);
+    column-gap: 1rem;
+    row-gap: 0;
+    padding: 1rem;
+  }
+  .avh-guide-body {
+    display: contents;
+  }
+  .avh .avh-guide-cover {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin-top: -1.6rem;
+  }
+  .avh-guide-label {
+    grid-column: 2;
+    align-self: end;
+  }
+  .avh .avh-guide h2 {
+    grid-column: 2;
+    align-self: start;
+    font-size: 1.15rem;
+  }
+  .avh-guide-text,
+  .avh-guide-actions,
+  .avh-guide-inside {
+    grid-column: 1 / -1;
+  }
+  .avh-guide-text {
+    margin-top: 0.8rem;
   }
   /* шкала событий становится вертикальной */
   .avh-tl-events {
